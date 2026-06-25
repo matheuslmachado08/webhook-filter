@@ -2,7 +2,7 @@ const express = require("express");
 const app = express();
 app.use(express.json({ limit: "50mb" }));
 
-const ALLOWED_JID = "558182638726@s.whatsapp.net";
+const ALLOWED_JID = "247007897714840@lid";
 const N8N_WEBHOOK_URL = "https://n8n-main-instance-production-d8e2.up.railway.app/webhook/audio-resumo";
 const PORT = process.env.PORT || 3000;
 
