@@ -2,7 +2,7 @@ const express = require("express");
 const app = express();
 app.use(express.json({ limit: "50mb" }));
 
-const ALLOWED_JID = "247007897714840@lid";
+const ALLOWED_JIDS = ["247007897714840@lid", "82274544545844@lid"];
 const N8N_WEBHOOK_URL = "https://n8n-main-instance-production-d8e2.up.railway.app/webhook/audio-resumo";
 const PORT = process.env.PORT || 3000;
 
@@ -24,7 +24,7 @@ app.post("/webhook", async (req, res) => {
     }
 
     // Filtra: só passa se for do contato certo E for áudio
-    if (remoteJid !== ALLOWED_JID || messageType !== "audioMessage") {
+    if (!ALLOWED_JIDS.includes(remoteJid) || messageType !== "audioMessage") {
       return res.status(200).json({ status: "ignored", reason: "not matching" });
     }
 
