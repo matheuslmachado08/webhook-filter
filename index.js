@@ -2,7 +2,8 @@ const express = require("express");
 const app = express();
 app.use(express.json({ limit: "50mb" }));
 
-const ALLOWED_JIDS = ["247007897714840@lid", "82274544545844@lid"];
+const ALLOWED_JIDS = ["247007897714840@lid", "82274544545844@lid"]; // contatos que podem te mandar áudio
+const OWN_JID = "5511999999999@s.whatsapp.net"; // seu próprio número, troque pelo valor real
 const N8N_WEBHOOK_URL = "https://n8n-main-instance-production-d8e2.up.railway.app/webhook/audio-resumo";
 const PORT = process.env.PORT || 3000;
 
@@ -18,14 +19,22 @@ app.post("/webhook", async (req, res) => {
 
     console.log(`Recebido: jid=${remoteJid}, type=${messageType}, fromMe=${fromMe}`);
 
-    // Ignora mensagens enviadas por mim
+    // Se a mensagem foi enviada por mim...
     if (fromMe) {
-      return res.status(200).json({ status: "ignored", reason: "fromMe" });
+      // só deixa passar se for uma nota pra mim mesmo (remetente = meu próprio JID)
+      if (remoteJid !== OWN_JID) {
+        return res.status(200).json({ status: "ignored", reason: "fromMe to someone else" });
+      }
+    } else {
+      // mensagem de terceiros: só passa se for de um contato autorizado
+      if (!ALLOWED_JIDS.includes(remoteJid)) {
+        return res.status(200).json({ status: "ignored", reason: "not allowed contact" });
+      }
     }
-
-    // Filtra: só passa se for do contato certo E for áudio
-    if (!ALLOWED_JIDS.includes(remoteJid) || messageType !== "audioMessage") {
-      return res.status(200).json({ status: "ignored", reason: "not matching" });
+    
+    // Em ambos os casos, só segue se for áudio
+    if (messageType !== "audioMessage") {
+      return res.status(200).json({ status: "ignored", reason: "not audio" });
     }
 
     // Encaminha para o n8n
